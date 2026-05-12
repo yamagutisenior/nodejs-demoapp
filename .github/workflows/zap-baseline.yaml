@@ -1,3 +1,4 @@
+name: ZAP Scan
 on:
   workflow_dispatch: 
 
