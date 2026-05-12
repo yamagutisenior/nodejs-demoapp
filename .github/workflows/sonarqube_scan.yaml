@@ -2,11 +2,6 @@ name: SonarQube Scan
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - main
-  # pull_request:
-  #   types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
@@ -22,6 +17,19 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+
+      # Debug: mostra o conteúdo do sonar-project.properties e variáveis de ambiente
+      - name: Debug - Verificar configuração
+        run: |
+          echo "=== sonar-project.properties ==="
+          cat sonar-project.properties 2>/dev/null || echo "ARQUIVO NÃO ENCONTRADO!"
+          echo ""
+          echo "=== Variáveis de ambiente Sonar ==="
+          echo "SONAR_HOST_URL definido: ${{ secrets.SONAR_HOST_URL != '' }}"
+          echo "SONAR_TOKEN definido: ${{ secrets.SONAR_TOKEN != '' }}"
+          echo ""
+          echo "=== Estrutura do projeto ==="
+          ls -la
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
