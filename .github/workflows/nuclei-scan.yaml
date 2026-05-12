@@ -9,7 +9,6 @@ permissions:
   security-events: write
   contents: read
   actions: read
-  issues: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -25,20 +24,42 @@ jobs:
         uses: projectdiscovery/nuclei-action@v3
         with:
           version: latest
-          config: |
-            target:
-              - https://jubilant-engine-9r6r4qqjppqcr-3000.app.github.dev/
-            severity:
-              - critical
-              - high
-              - medium
-            sarif-export: nuclei.sarif
+          args: >-
+            -u https://jubilant-engine-9r6r4qqjppqcr-3000.app.github.dev/
+            -severity critical,high,medium
+            -se nuclei.sarif
 
-      - name: Upload nuclei log artifact
+      # Garante que o arquivo SARIF sempre exista (Nuclei não cria se não há findings)
+      - name: Ensure SARIF file exists
+        if: always()
+        run: |
+          if [ ! -f nuclei.sarif ]; then
+            echo "Nenhuma vulnerabilidade encontrada. Criando SARIF vazio..."
+            cat > nuclei.sarif << 'EOF'
+          {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "Nuclei",
+                    "version": "latest",
+                    "rules": []
+                  }
+                },
+                "results": []
+              }
+            ]
+          }
+          EOF
+          fi
+
+      - name: Upload nuclei SARIF artifact
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: nuclei-results
+          name: nuclei-sarif
           path: nuclei.sarif
 
       - name: GitHub Security Dashboard Alerts update
