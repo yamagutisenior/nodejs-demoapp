@@ -1,38 +1,19 @@
-name: SonarQube Scan
-
+name: Build
 on:
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 jobs:
   sonarqube:
     name: SonarQube
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          fetch-depth: 0
-
-      # Debug: mostra o conteúdo do sonar-project.properties e variáveis de ambiente
-      - name: Debug - Verificar configuração
-        run: |
-          echo "=== sonar-project.properties ==="
-          cat sonar-project.properties 2>/dev/null || echo "ARQUIVO NÃO ENCONTRADO!"
-          echo ""
-          echo "=== Variáveis de ambiente Sonar ==="
-          echo "SONAR_HOST_URL definido: ${{ secrets.SONAR_HOST_URL != '' }}"
-          echo "SONAR_TOKEN definido: ${{ secrets.SONAR_TOKEN != '' }}"
-          echo ""
-          echo "=== Estrutura do projeto ==="
-          ls -la
-
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
