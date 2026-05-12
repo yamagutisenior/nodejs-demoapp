@@ -1,9 +1,18 @@
 name: Nuclei - Vulnerability Scan
 
 on:
-    #schedule:
-      #- cron: '0 0 * * *' #roda todo dia as 00:00h
-    workflow_dispatch:
+  # schedule:
+  #   - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  security-events: write
+  contents: read
+  actions: read
+  issues: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   nuclei-scan:
@@ -13,7 +22,7 @@ jobs:
 
       - name: Nuclei - Vulnerability Scan
         id: nuclei_scan
-        uses: projectdiscovery/nuclei-action@main
+        uses: projectdiscovery/nuclei-action@v3
         with:
           target: https://jubilant-engine-9r6r4qqjppqcr-3000.app.github.dev/
 
@@ -24,8 +33,8 @@ jobs:
           path: nuclei.log
 
       - name: GitHub Security Dashboard Alerts update
-        uses: github/codeql-action/upload-sarif@v3
-        if: steps.nuclei_scan.outputs.sarif_exists == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        if: always() && steps.nuclei_scan.outputs.sarif_exists == 'true'
         with:
           sarif_file: nuclei.sarif
         env:
